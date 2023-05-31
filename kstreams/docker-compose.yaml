@@ -14,27 +14,26 @@ services:
      - zookeeper
     environment:
      - ZOOKEEPER_CONNECT=zookeeper:2181
-  mysql:
-    image: quay.io/debezium/example-mysql:${DEBEZIUM_VERSION}
+  postgres:
+    image: quay.io/debezium/example-postgres:2.1
     ports:
-     - 3306:3306
+     - 5432:5432
     environment:
-     - MYSQL_ROOT_PASSWORD=debezium
-     - MYSQL_USER=mysqluser
-     - MYSQL_PASSWORD=mysqlpw
+     - POSTGRES_USER=postgres
+     - POSTGRES_PASSWORD=postgres
   mongodb:
     image: mongo:latest
     ports:
      - 27017:27017
   connect_source:
-    image: quay.io/debezium/connect:${DEBEZIUM_VERSION}
-    build:
+    image: quay.io/debezium/connect:2.1
+    build: 
       context: debezium-mongodb
     ports:
      - 8083:8083
     links:
      - kafka
-     - mysql
+     - postgres
     environment:
      - BOOTSTRAP_SERVERS=kafka:9092
      - GROUP_ID=1
@@ -71,7 +70,7 @@ services:
      - connect_source
     command: >
       /bin/bash -c "
-        while ! curl -f -s -X GET http://connect_source:8083/connectors/mysql-source;
+        while ! curl -f -s -X GET http://connect_source:8083/connectors/postgres-source;
         do
           echo 'Waiting for source connector to be deployed';
           sleep 1;
